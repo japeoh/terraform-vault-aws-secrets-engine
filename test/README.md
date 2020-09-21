@@ -41,3 +41,34 @@ curl \
 terraform destroy -force
 podman stop vault
 ```
+
+## Additional AWS Permissions to Create Test Roles and Groups
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "CreateRolesForTesting",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateRole",
+        "iam:DeleteRole",
+        "iam:GetRole",
+        "iam:ListInstanceProfilesForRole"
+      ],
+      "Resource": "arn:aws:iam::XXXXXXXXXXXX:role/vault-test/*"
+    },
+    {
+      "Sid": "CreateGroupsForTesting",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateGroup",
+        "iam:DeleteGroup",
+        "iam:GetGroup"
+      ],
+      "Resource": "arn:aws:iam::XXXXXXXXXXXX:group/vault-test/*"
+    }
+  ]
+}
+```

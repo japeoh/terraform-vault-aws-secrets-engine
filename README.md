@@ -43,7 +43,7 @@ understand this and if you decide to use this module take appropriate action to 
 | Name            | Description |
 |-----------------|---|
 | name            | The name of the Vault role to create
-| iam_groups      | A List of IAM Roles that can be assumed by this Vault role
+| role_arns       | A List of IAM Roles that can be assumed by this Vault role
 | default_sts_ttl | The default TTL for credentials
 | max_sts_ttl     | The max allowed TTL for credentials 
 
@@ -74,5 +74,54 @@ vault_roles = {
     "path" = "aws/creds/test5"
     "policy" = "aws/test5"
   }
+}
+```
+
+## AWS IAM Permissions
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ManageUserForAwsSecretsEngine",
+      "Effect": "Allow",
+      "Action": [
+        "iam:AttachUserPolicy",
+        "iam:CreateAccessKey",
+        "iam:CreateUser",
+        "iam:DeleteAccessKey",
+        "iam:DeleteLoginProfile",
+        "iam:DeleteUser",
+        "iam:DetachUserPolicy",
+        "iam:GetUser",
+        "iam:ListAccessKeys",
+        "iam:ListAttachedUserPolicies",
+        "iam:ListGroupsForUser",
+        "iam:ListMFADevices",
+        "iam:ListSSHPublicKeys",
+        "iam:ListSigningCertificates"
+      ],
+      "Resource": "arn:aws:iam::XXXXXXXXXXXX:user/vault/aws-secrets-engine-*"
+    },
+    {
+      "Sid": "ManagePoliciesForAwsSecretsEngine",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreatePolicy",
+        "iam:DeletePolicy",
+        "iam:GetPolicy",
+        "iam:GetPolicyVersion",
+        "iam:ListPolicyVersions"
+      ],
+      "Resource": "arn:aws:iam::XXXXXXXXXXXX:policy/vault/aws-secrets-engine-*"
+    },
+    {
+      "Sid": "ListVirtualMFADevices",
+      "Effect": "Allow",
+      "Action": "iam:ListVirtualMFADevices",
+      "Resource": "*"
+    }
+  ]
 }
 ```
