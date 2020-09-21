@@ -1,3 +1,7 @@
+variable path {
+  default = "test"
+}
+
 variable role_names {
   type = list(string)
   default = [
@@ -11,6 +15,7 @@ variable role_names {
 module "vault_aws_secret_engine" {
   source = "../"
 
+  path = var.path
   assumed_roles = [
     {
       name = var.role_names[0]
@@ -61,6 +66,7 @@ resource aws_iam_role test_role {
   count = 3
 
   name = format("test-role-%s", count.index + 1)
+  path = "/vault-test/"
 
   assume_role_policy = data.aws_iam_policy_document.trust.json
 }
@@ -69,7 +75,7 @@ resource aws_iam_group test_group {
   count = 3
 
   name = format("test-group-%s", count.index + 1)
-  path = "/vault/"
+  path = "/vault-test/"
 }
 
 data aws_iam_policy_document trust {
@@ -93,6 +99,8 @@ data template_file test_commands {
   template = file(format("%s/test_commands.tpl", path.module))
 
   vars = {
+    path = var.path
+
     role1_name = keys(module.vault_aws_secret_engine.vault_roles)[0]
     role2_name = keys(module.vault_aws_secret_engine.vault_roles)[1]
     role3_name = keys(module.vault_aws_secret_engine.vault_roles)[2]
@@ -121,12 +129,12 @@ data template_file test_commands {
   }
 }
 
-output test_commands {
-  value = data.template_file.test_commands.rendered
-}
-
 output vault_roles {
   value = module.vault_aws_secret_engine.vault_roles
+}
+
+output test_commands {
+  value = data.template_file.test_commands.rendered
 }
 
 provider "aws" {

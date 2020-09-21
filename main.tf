@@ -57,7 +57,7 @@ data vault_policy_document generate_credentials {
 #
 
 resource aws_iam_user aws_secret_engine_user {
-  name          = format("aws-secret-backend-%s", var.path)
+  name          = local.name
   path          = "/vault/"
   force_destroy = true
   tags          = var.tags
@@ -72,7 +72,8 @@ resource aws_iam_access_key aws_secret_engine_user {
 #
 
 resource aws_iam_policy manage_iam_users {
-  name   = format("aws-secret-engine-%s-manage-users", var.path)
+  name   = format("%s-manage-users", local.name)
+  path   = "/vault/"
   policy = data.aws_iam_policy_document.manage_iam_users.json
 }
 
@@ -104,17 +105,18 @@ data aws_iam_policy_document manage_iam_users {
 # Allow the Vault IAM User to be able to assume all IAM Roles for configured Vault roles
 #
 
-resource aws_iam_policy assume_role_policy {
-  name   = format("aws-secret-engine-%s-assume-roles", var.path)
-  policy = data.aws_iam_policy_document.assume_role_policy.json
+resource aws_iam_policy assume_roles {
+  name   = format("%s-assume-roles", local.name)
+  path   = "/vault/"
+  policy = data.aws_iam_policy_document.assume_roles.json
 }
 
-resource aws_iam_user_policy_attachment assume_role_policy {
+resource aws_iam_user_policy_attachment assume_roles {
   user       = aws_iam_user.aws_secret_engine_user.name
-  policy_arn = aws_iam_policy.assume_role_policy.arn
+  policy_arn = aws_iam_policy.assume_roles.arn
 }
 
-data aws_iam_policy_document assume_role_policy {
+data aws_iam_policy_document assume_roles {
   statement {
     effect = "Allow"
     actions = [
@@ -128,17 +130,18 @@ data aws_iam_policy_document assume_role_policy {
 # Allow the Vault IAM User to add and remove dynamically generated IAM User to IAM Groups for Vault roles
 #
 
-resource aws_iam_policy add_user_to_group {
-  name   = format("aws-secret-engine-%s-user-groups", var.path)
-  policy = data.aws_iam_policy_document.add_user_to_group.json
+resource aws_iam_policy manage_groups {
+  name   = format("%s-manage_groups", local.name)
+  path   = "/vault/"
+  policy = data.aws_iam_policy_document.manage_groups.json
 }
 
-resource aws_iam_user_policy_attachment add_user_to_group {
+resource aws_iam_user_policy_attachment manage_groups {
   user       = aws_iam_user.aws_secret_engine_user.name
-  policy_arn = aws_iam_policy.add_user_to_group.arn
+  policy_arn = aws_iam_policy.manage_groups.arn
 }
 
-data aws_iam_policy_document add_user_to_group {
+data aws_iam_policy_document manage_groups {
   statement {
     effect = "Allow"
     actions = [
